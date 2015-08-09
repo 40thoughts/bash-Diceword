@@ -1,0 +1,100 @@
+#!/bin/bash
+
+function usage(){
+  printf "\nHow to use Diceword :\tdiceword [-s] [-f] [-d DEVICE] [NB of word(s)]\n\n"
+  printf "\t-d             : choose your delimiter (none by default)\n"
+  printf "\t-s             : print a phrase in slow mode (device : /dev/random)\n"
+  printf "\t-f             : print a phrase in fast mode (device : /dev/urandom)\n"
+  printf "\t-i [DEVICE]    : print a phrase using your own device\n"
+  printf "\t-h             : print this screen\n\n"
+  printf "\tExample :\tdiceword -d \";\" -s 5\n"
+  printf "\tOutput :\tYour passphrase is : pansy;42nd;lodge;dyke;lulu\n\n"
+  printf "\tTo choose your own input device use this one :\n\n"
+  printf "\t\tdiceword -i /dev/random 5\n"
+  printf "\t\t(Where /dev/random is your device)\n\n"
+}
+
+function getWord(){
+  if [ -z "$2" ]
+  then
+    printf "\nLength missing !\n\n"
+    printf "Please set a length for your passphrase (in words)\n\n"
+    printf "\tEx. :\tdiceword -f 10\n"
+    printf "\tOr :\tdiceword -i /dev/random 10\n\n"
+    exit 1
+  fi
+  printf "Your passphrase is : "
+  for ((i=1; i<=$2; i++))
+  do
+    wordNum=""
+    for n in {1..5}
+    do
+      wordNum="$wordNum$((0x$(head -c5 $1 | xxd -ps)%6+1))"
+    done
+    if [ "$i" -eq "$2" ]
+    then
+      echo -en "\e[1m$(cat /usr/share/diceword/diceware.json | grep "$wordNum" | cut -d "\"" -f4)\e[21m"
+    else
+      echo -en "\e[1m$(cat /usr/share/diceword/diceware.json | grep "$wordNum" | cut -d "\"" -f4)$del\e[21m"
+    fi
+  done
+  printf "\n"
+  exit 0
+}
+
+if [ $# -eq 0 ]
+then
+  usage
+  exit 1
+fi
+
+while getopts ":hd:sfi:" option
+do
+  case $option in
+  h)
+    usage
+    exit 0
+    ;;
+
+  d)
+    del=$OPTARG
+    ;;
+
+  s)
+    shift $((OPTIND-1))
+    getWord "/dev/random" $1
+    ;;
+
+  f)
+    shift $((OPTIND-1))
+    getWord "/dev/urandom" $1
+    ;;
+
+  i)
+    shift $((OPTIND-1))
+    if [ -c "$OPTARG" ]
+    then
+      getWord $OPTARG $1
+    else
+      printf "\nSomething went wrong !\n"
+      printf "Please choose a readable character device\n\n"
+      exit 1
+    fi
+    ;;
+
+  :)
+    printf "\nThe option [$OPTARG] requires an argument\n\n"
+    exit 1
+    ;;
+
+  \?)
+    printf "\n$OPTARG : invalid option\n\n"
+    printf "Please refer to the help screen by typing :\tdiceword -h\n\n"
+    exit 1
+    ;;
+  esac
+done
+
+printf "\nSorry but something went wrong !\n"
+printf "Did you forget an option or an argument ?\n\n"
+exit 0
