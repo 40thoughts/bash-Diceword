@@ -97,4 +97,5 @@ done
 
 printf "\nSorry but something went wrong !\n"
 printf "Did you forget an option or an argument ?\n\n"
+printf "Please refer to the help screen by typing :\tdiceword -h\n\n"
 exit 0
