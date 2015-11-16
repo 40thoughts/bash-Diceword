@@ -14,11 +14,17 @@ then
   mkdir -p $confFolder
 fi
 
-wget -q https://raw.githubusercontent.com/40thoughts/bash-Diceword/master/res/diceware.json -O $confFolder/diceware.json
-wget -q https://raw.githubusercontent.com/40thoughts/bash-Diceword/master/diceword -O $binFolder/diceword
+curl -s -o $confFolder/diceware.json https://raw.githubusercontent.com/40thoughts/bash-Diceword/master/res/diceware.json
+curl -s -o $binFolder/diceword https://raw.githubusercontent.com/40thoughts/bash-Diceword/master/diceword
 chmod +x $binFolder/diceword
 
-printf "\nDiceword has been succesfully installed\n"
-printf "\nUse it by typing :\tdiceword -h\n\n"
+if [ -e "$confFolder/diceware.json" ] && [ -e "$binFolder/diceword" ]
+then
+  printf "\nDiceword has been successfully installed\n"
+  printf "\nUse it by typing :\tdiceword -h\n\n"
+else
+  printf "\nSorry, it seems like something went wrong !!!\n\n"
+  exit 1
+fi
 
 exit 0
